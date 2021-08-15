@@ -1,0 +1,39 @@
+What? 
+    A blockchain is a, generally, publically accessible database consisting of 'blocks', and are kept secure by network participation. In essense a blockchain is a linked list that utilises computational power and democratic participation to keep the network safe.
+
+How?
+    I will construct a rudimentary blockchain using the Ruby language.
+
+What is a hash function?
+    A hash function is a function that receives as input a string of any length, and returns a string of fixed length that looks random, but isn't. Each string has it's own output hash that is alwasy the same, correlating specifically to it's input value.
+
+    The SHA256 encryption method is used to take in the input string, and return a seemingly random string as an output. The output is a random alphanumeric sequence which is always equivilant to the input, however the key is that even changing one letter in the input string will return an entirely different output SHA256 string. Because of this it is (as of today, anyway) impossible to reverse-engineer the input sequence to any SHA256 output string.
+
+    Hash functions are absolutely integral to the function of a blockchain network, they not only serve as addresses for token wallets, but allow the blockchain network to perform 'mining' functions, which we will epxlore breifly.
+
+What's a block?
+    A block contains three components: the block's Data, the current Hash, and the previous Hash.
+
+    It's almost impossible to change block data once it's written to the chain because every block references the previous block. Because the hash is based off of the data inside each block, if we change one blocks data the hash has to change, and therefor subsequently if we modify blocks in the chain, all subsequent blocks must have their hashes updated. Not only does it require an inordinate amount of computational power to rewrite hashes, the democratic consensus of the network will see the modified chain is different to the majority of agreed-upon chains and will ignore the newly modified malicious chain.
+
+    The data structure of a block in psuedocode looks like:
+        class Block():
+            def __init__(self, data, previous_hash)
+                self.data = data
+                self.previous_hash = previous_hash
+                self.hash = sha256(self.to_string().endode()).hexdigest()
+            
+            def to_string(self)
+                return "{0}\t{1}.format(self.data, self.previous_hash)
+    
+    Every blockchain must have a first block, which is called the genesis block. This block will have a hash that point to a null hash as its previous block.
+
+Proof of work.
+    AS we discussed with hash functions, they are very easy to generate but impossibly difficult to reverse. There is no other way to reverse a SHA256 string other than to use brute force computation to guess the input string. It takes 2^256 guesses to correctly guess the input string, which is such an unfathohmably high number that it is difficult to humanly comprehend. 
+
+    As a secure method for stopping imposters from modifying the blockchain, each block's hash must lead with X numer of zeroes. The amount of leading zeroes determines how difficult it is to create a new hash. For example, if we define that for a block to be valid on our chain it must lead with four "0"s, we must find a new hash that takes as input the new block's data and return a hash with four "0"s as a return string. 
+
+    The fundamental concept of proof-of-work blockchains are very simple: exchange computational power for security. Because it requires so much effort for a single computer to create a new hash, it creates a reliance on a network of distributed computational power.
+
+    In order to make attempts at hashing different from one another we use a number called the 'nonce'.
+
