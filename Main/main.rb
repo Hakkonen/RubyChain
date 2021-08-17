@@ -18,9 +18,11 @@ def main()
     ruby_chain = Blockchain.new
 
     # 2. Initalise genesis block
-    genesis_block = Block.new
+    genesis_block = Block.new("9000BTC", 0)
 
     p genesis_block
+
+    # 3. 
 end
 
 main()

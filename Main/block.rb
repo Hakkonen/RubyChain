@@ -10,7 +10,7 @@ require "digest"
 
 
 class Block
-    def initialize(data="100BTC", prev_hash=00000000)
+    def initialize(data="100BTC", prev_hash="00000000")
         @data = data.to_s
         @prev_hash = prev_hash.to_s
         @hash = create_hash(data)
@@ -18,8 +18,10 @@ class Block
     end
 
     def validate_hash(input_hash)
-        puts("Input hash check: " + input_hash.match(/^(0){1}/).to_s)
-        return input_hash.match(/^(0){1}/)
+        puts "VALIDATING"
+        puts input_hash
+        puts(input_hash.match?(/^"0"/))
+        return input_hash.match?(/^"0"/)
     end
 
     def create_hash(data)
@@ -33,8 +35,10 @@ class Block
         # Check if hash meets validation
         # More leading "0"s infer more complexity
         while(validate_hash(new_hash) == false)
+            puts "VALIDATING"
             # Incerement nonce to allow new hash generation
             nonce +=1
+            puts nonce
 
             # Generate new hash
             new_hash = Digest::SHA256.hexdigest(data.to_s + nonce.to_s)
