@@ -8,6 +8,8 @@ class Block():
         self.data = data
         self.previous_block_hash = previous_block_hash
         self.hash = sha256(self.to_string().encode()).hexdigest()
+        print(self.hash)
+        print()
 
     # determine if a SHA256 output is valid
     # if the input string leads with three zeroes return true, else return false
@@ -15,7 +17,7 @@ class Block():
         return (hash.startswith("0" * 3))
 
     # runs hash function until valid hash is mined
-    def calculate_valid_hash(self):
+    def calculate_valid_hash(self): # <-- this is not currently being called
         # initiate empty hash/nonce vars
         hash = ""
         nonce = 0
@@ -26,6 +28,7 @@ class Block():
             temp = self.to_string() + str(nonce)
             # input string of data and nonce into the hash function
             hash = sha256(temp.encode()).hexdigest()
+            print(hash)
             # increment nonce
             nonce += 1
             # if output does not have three leading zeroes, repeat
