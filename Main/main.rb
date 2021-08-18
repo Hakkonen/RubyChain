@@ -1,7 +1,4 @@
-# operates the blockchain
-
-# How to require an external class 
-# require_relative "test_block"
+# Runs the software
 
 require_relative "blockchain"
 require_relative "block"
@@ -41,12 +38,12 @@ def menu(phrase)
 
     while selection == ""
         selection = gets.chomp()
-        if selection = "Y" || selection = "y"
+        if selection == "Y" || selection == "y"
             return true
-        elsif selection "N" || selection = "n"
+        elsif selection == "N" || selection == "n"
             return false
         else
-            selection = ""
+            selection == ""
             puts phrase.to_s + " (Y/n)"
             selection = gets.chomp()
         end
@@ -54,13 +51,6 @@ def menu(phrase)
 end
 
 def main()
-    # How to import class below
-    # genesis = Block.new
-    
-    # p genesis
-    # genesis.test()
-    # -------------------------
-
     # Scoped variables
     ruby_chain = []
 
@@ -82,10 +72,18 @@ def main()
         ruby_chain.push initialise_genesis_block(18370000)
 
         # Show chain
-        # inspect ruby_chain.to_s
+        if menu("Show chain?") == true
+            puts ruby_chain.to_s
+        else
+            puts "Exiting"
+            exit
+        end
     end
 
-    
+    # TODO
+    # Create mining func
+    # Insert new data into each new block
+    # Create a wallet that reads addresses / transfers
 end
 
 main()
