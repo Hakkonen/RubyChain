@@ -1,4 +1,4 @@
-# block class
+# Block class
 # A block consists of four elements:
 #   1. Prev_hash
 #   2. Tx_Root (Merkle root) / Transaction data
@@ -10,35 +10,37 @@ require "digest"
 
 
 class Block
-    def initialize(data="100BTC", prev_hash="00000000")
-        @data = data.to_s
-        @prev_hash = prev_hash.to_s
-        @hash = create_hash(data, prev_hash)
-        @timestamp = Time.now.getutc
+    attr_reader :data
+    attr_reader :hash
+    attr_reader :prev_hash
+    attr_reader :nonce
+    attr_reader :timestamp
+
+    def initialize(data="", prev_hash)
+        @data = data
+        @prev_hash = prev_hash
+        @hash, @nonce  = create_hash(data, prev_hash)
+        @timestamp = Time.now.to_i
     end
 
-    def validate_hash(input_hash)
-        return input_hash.match?(/^000/)
-    end
-
-    def create_hash(data, last_hash)
-        # Init a nonce, a procedural implement for finding the right hash
+    def create_hash(data, last_hash, difficulty="000")
+        # Init a nonce, a "number used once" for incrementing random generation of a SHA hash
         nonce = 0
 
-        # Ingest data and combine with nonce, then convert to SHA256 hash
-        new_hash = Digest::SHA256.hexdigest(last_hash.to_s + data.to_s + nonce.to_s)
+        # Generate initial hash
+        hash = Digest::SHA256.hexdigest(last_hash.to_s + data.to_s + nonce.to_s)
 
         # Check if hash meets validation
         # More leading "0"s infer more complexity
-        while(validate_hash(new_hash) == false)
+        while(hash.to_s.start_with?(difficulty) == false)
             # Incerement nonce to allow new hash generation
-            nonce +=1
+            nonce += 1
 
-            # Generate new hash
-            new_hash = Digest::SHA256.hexdigest(last_hash.to_s + data.to_s + nonce.to_s)
+            # Ingest data and combine with nonce, then convert to SHA256 hash
+            hash = Digest::SHA256.hexdigest(last_hash.to_s + data.to_s + nonce.to_s)
         end
 
-        puts(new_hash)
-        return new_hash
+        # Return succesful hash
+        return [hash, nonce]
     end
 end
