@@ -27,17 +27,19 @@ class Block
         # Init a nonce, a "number used once" for incrementing random generation of a SHA hash
         nonce = 0
 
-        # Generate initial hash
-        hash = Digest::SHA256.hexdigest(last_hash.to_s + data.to_s + nonce.to_s)
-
         # Check if hash meets validation
         # More leading "0"s infer more complexity
-        while(hash.to_s.start_with?(difficulty) == false)
-            # Incerement nonce to allow new hash generation
-            nonce += 1
+        # Post-check loop to allow initial hash generation
+        loop do
+            # Re-generate time for hash
+            time = Time.now.to_i
 
             # Ingest data and combine with nonce, then convert to SHA256 hash
-            hash = Digest::SHA256.hexdigest(last_hash.to_s + data.to_s + nonce.to_s)
+            hash = Digest::SHA256.hexdigest(nonce.to_s + time.to_s + last_hash.to_s + data.to_s)
+
+            # Incerement nonce to allow new hash generation
+            nonce += 1
+            break if (hash.to_s.start_with?(difficulty) == true)
         end
 
         # Return succesful hash
