@@ -33,10 +33,13 @@ def validate_chain(array)
     # Checks block hash to prev block hash
     if array[-1].prev_hash.to_s.eql?(array[-2].hash.to_s) == false
         return false
+    end
 
     # Checks block time to ensure chronological seq
-    if array[-1].timestamp.to_i > array[-2].timestamp.to_i == false
-        return false
+    # Does not work while blocks are being generated within the same second
+    # if array[-1].timestamp.to_i > array[-2].timestamp.to_i == false
+    #     return false
+    # end
 
     return true
 end
