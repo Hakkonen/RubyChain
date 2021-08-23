@@ -78,7 +78,7 @@ EXAMPLE RUNNING OF A BLOCKCHAIN
         3. When a new block is mined the merkle root of all transactions is committed 
 
 Endianness and the block hash:
-    Endianness is the sequencing of data in a string of bits from either most significant bit at the start of the byte, or the least significant bit at the start of the byte. The choice between the two offer no real significant advantages, and comes down the the programmer's choice at the point of creation. While Bitcoin creator's Satoshi Nakamoto chose to use little-endianness for speed, I will be using the defacto big-endianness of Ruby's language.
+    Endianness is the sequencing of data in a string of bits from either most significant bit at the start of the byte, or the least significant bit at the start of the byte. The choice between the two offer no real significant advantages, and comes down the the programmer's choice at the point of creation. However, Bitcoin creator's Satoshi Nakamoto chose to use little-endianness for speed, so I will be utilising their method.
 
     The significance of utilising endianness in this program (or Bitcoin's) comes down to the compression of block hash data into an 80-byte string. This string consists of six components of variang length:
         1. Version (4 bytes )

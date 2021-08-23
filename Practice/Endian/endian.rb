@@ -24,48 +24,44 @@ def hex32 ( hex )
     [hex].pack("H*").reverse 
 end
 
+def bin_to_hex32( bytes )
+    bytes.reverse.unpack( 'H*' )[0]   ## note: change byte order (w/ reverse)
+end
+
+def bin_to_hex( bytes )
+    bytes.unpack( 'H*' )[0] # The [0] just unpacks first returned array
+end
+
 # Packing functions for big-end
-def int4_b( num )
-    # Packs the input as little-endian 32 bit VAX byte order
-    [num].pack("N")
-end
+# def int4_b( num )
+#     # Packs the input as little-endian 32 bit VAX byte order
+#     [num].pack("N")
+# end
 
-def hex32_b ( hex )
-    # Packs the input as a hex string and then reverses
-    [hex].pack("H*") 
-end
+# def hex32_b ( hex )
+#     # Packs the input as a hex string and then reverses
+#     [hex].pack("H*") 
+# end
 
-# As little-end
-pp header =
-   int4( version       ) +
-  hex32( prev_hash          ) +
-  hex32( merkleroot    ) +
-   int4( time          ) +
-   int4( bits.to_i(16) ) +
-   int4( nonce         )
-
-# As big-end
-pp header =
-   int4_b( version       ) +
-  hex32_b( prev_hash          ) +
-  hex32_b( merkleroot    ) +
-  int4_b( time          ) +
-   int4_b( bits.to_i(16) ) +
-   int4_b( nonce         )
+pp version
+pp int4(version)
+# => "\x01\x00\x00\x00"
+pp bin_to_hex(int4(version))
+# => "01000000"
+pp hex32(merkleroot)
+# => ";\xA3\xED\xFDz{\x12\xB2z\xC7,>gv\x8Fa\x7F\xC8\e\xC3\x88\x8AQ2:\x9F\xB8\xAAK\x1E^J"
+pp bin_to_hex32(hex32(merkleroot))
+# => "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"
 
 
-# header2 = 
-# version +   
-# prev_hash +
-# merkleroot +
-# time +
-# bits.to_i(16) +
-# nonce
 
-puts header.length
+# header =
+#    int4( version       ) +
+# #   hex32( prev_hash          ) +
+#   hex32( merkleroot    ) +
+#    int4( time          ) +
+#    int4( bits.to_i(16) ) +
+#    int4( nonce         )
 
-# pp header
-# pp int4(version)
-# pp bin_to_hex(header)
-# pp bin_to_hex(int4(version))
+# puts header.length
 
