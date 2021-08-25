@@ -16,60 +16,48 @@ require "pp"
 # sig = key.sign("data")
 # key.verify("data", sig)
 
+# This is the data to wrap
+document = "The password is: password."
 
-message = "9000"
-public_key = "040c1fbe8b870d636823963ff21ba6e5250571848714203a08ae8700e0d97a1d7bb94ae888af72ac9a4fe02d558599d27c8986398902fa9ac0c1654f5839db1af5"
-private_key = "2ec6d2808dc7b9d11e49516cfc747435feae8e9872d63c92bc5bde68a894199f"
+key = OpenSSL::PKey::EC.generate("prime256v1")
+# key = OpenSSL::PKey::EC.new('secp256k1').generate_key
+pp key.to_der.unpack("H*")[0]
 
-require 'starkbank-ecdsa'
+pub_key = OpenSSL::PKey::EC.new(key.public_key.group)
+pub_key.public_key = key.public_key
+pp pub_key.to_der.unpack("H*")[0]
 
-# # StarkBank gem
-# privateKey = EllipticCurve::PrivateKey.new()
-# pp 
-# publicKey = privateKey.publicKey()
+signature = key.dsa_sign_asn1(OpenSSL::Digest::SHA256.digest(document))
+# signature = hash_key.dsa_sign_asn1(OpenSSL::Digest::SHA256.digest(document))
 
-# message = "My test message"
+verified = pub_key.dsa_verify_asn1(OpenSSL::Digest::SHA256.digest(document), signature)
+puts verified
 
-# # Generate Signature
-# signature = EllipticCurve::Ecdsa.sign(message, privateKey)
+##################
 
-# # Verify if signature is valid
-# puts EllipticCurve::Ecdsa.verify(message, signature, publicKey)
+# # create a public/private key pair 
+# key = OpenSSL::PKey::RSA.new(2048)
+# # pp key.to_der.unpack("H*")[0]
 
-# Hash message — Double hashing step
-# def hash(msg)
-#     result = Digest::SHA256.hexdigest(msg)
-#     return Digest::RMD160.hexdigest(result)
+# # extract the public key from the pair
+# pub_key = OpenSSL::PKey::RSA.new(key.public_key.to_der)
+# # pp pub_key
+
+# # To prove that the message was sent by the originator, the sender generates a signature for the message. This is done by the sender using the sender’s private key and the pre-defined digest function:
+# signature = key.sign(OpenSSL::Digest::SHA256.new, document)
+
+# # Using the recipient’s public key, the sender will encrypt the plain text:
+# encrypted = pub_key.public_encrypt(document)
+
+# # The recipient can now decrypt the message using their private key:
+# decrypted = key.private_decrypt(encrypted)
+# puts decrypted
+
+# # Finally, the recipient can verify that the message is actually from the sender by checking the signature:
+# if pub_key.verify(OpenSSL::Digest::SHA256.new, signature, decrypted)
+#     puts "Verified"
+# else
+#     puts "Failed verification"
 # end
 
-# def createSignature(msg, private_k)
-#     MESSAGE_HASH = hash(message)
-#     PRIV_KEY_PAIR = EC
-#     SIGNATURE = 
-# end
-
-# SHA256
-# private_key = "Hello world!"
-# public_ad = Digest::SHA256.hexdigest(private_key)
-# pp public_ad
-# pp public_ad.length
-
-# EC
-
-example_key = OpenSSL::PKey::EC.new('secp256k1').generate_key
-pp example_key.to_pem
-private_key = example_key.private_key
-pp private_key.to_pem
-
-group = OpenSSL::PKey::EC::Group.new('secp256k1')
-public_key = group.generator.mul(private_key)
-
-puts example_key.public_key == public_key # => true
-
-# RIPEMD160
-# wallet_ad = Digest::RMD160.hexdigest(public_ad)
-# pp wallet_ad
-# pp wallet_ad.length
-
-# pp "1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy"
-# pp "1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy".length
+################
