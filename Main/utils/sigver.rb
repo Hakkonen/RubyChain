@@ -23,14 +23,16 @@ module SigVer
         return signature
     end
 
-    def SigVer.gen_pub_key(private_key_string)
-        group = ECDSA::Group::Secp256k1
+    ############################################
+    # Deprecated
+    # def SigVer.gen_pub_key(private_key_string)
+    #     group = ECDSA::Group::Secp256k1
 
-        priv_key = private_key_string.unpack("H*")[0].to_i 
+    #     priv_key = private_key_string.unpack("H*")[0].to_i 
 
-        # Generate public address from the private key integer
-        return group.generator.multiply_by_scalar(priv_key)
-    end
+    #     # Generate public address from the private key integer
+    #     return group.generator.multiply_by_scalar(priv_key)
+    # end
 
     def SigVer.verify(public_key, document, signature)
         # Doc may need to be digested as string?

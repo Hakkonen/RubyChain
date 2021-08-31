@@ -1,11 +1,15 @@
+# MAKE SURE TO NOTE 3rd PARTY GEMS
 require "./utils/sigver"
 require "digest"
 require "base58"
 
-
+# For pub key gen
+require 'ecdsa'
+require 'securerandom'
 
 module KeyChain
     def KeyChain.keypair_gen(string)
+        # TODO: Change to return an object
         result = []
 
         # Generate private key
@@ -15,7 +19,13 @@ module KeyChain
         result.push private_key
 
         # Generate ECC public key
-        ecc_public_key = SigVer.gen_pub_key(private_key)
+        group = ECDSA::Group::Secp256k1
+
+        private_key_unpacked = private_key.unpack("H*")[0].to_i 
+
+        # Generate public address from the private key integer
+        ecc_public_key = group.generator.multiply_by_scalar(private_key_unpacked)
+
         puts "Public key:"
         pp ecc_public_key.x
         pp ecc_public_key.y
