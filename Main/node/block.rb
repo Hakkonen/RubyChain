@@ -1,4 +1,6 @@
 # The block class
+
+require "digest"
 require "pp"
 require "json"
 

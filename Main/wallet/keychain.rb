@@ -1,3 +1,5 @@
+# Generates private/public key pairs
+
 # MAKE SURE TO NOTE 3rd PARTY GEMS
 require "./utils/sigver"
 require "digest"

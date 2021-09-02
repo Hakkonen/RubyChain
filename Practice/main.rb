@@ -36,8 +36,6 @@ def start_mine(blockchain, ledger_addr)
     while count < 3
         # Load ledger data
         ruby_chain = Blockchain.read_ledger("./ledger/ledger.json")
-        # puts "Ledger read:"
-        # pp ruby_chain
 
         # Run mining func
         ruby_chain.push Blockchain.mine(ruby_chain, "./mempool_dir/mempool.txt")
