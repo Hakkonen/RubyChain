@@ -4,37 +4,38 @@ require "./node/block"
 require "./node/blockchain.rb"
 
 require "json"
-require "csv"
+require "digest"
 require "pp"
 
 
 module Mine
     # Runs mining operations
-    def Mine.run()
-        # Open blockchain cache
-        blockchain = Blockchain.new()
-        blockchain.ledger["data"] = Mine.read_ledger()
+    def Mine.run(chain)
 
-        # Open ledger to cache
-        puts "Printing loaded ledger:"
-        # pp blockchain.ledger
+        # Open mempool data
+        mempool = ""
+        File.open("./mempool_dir/mempool.txt", "r") do |f|
+            mempool = f.read()
+        end
+        puts "MEMPOOL LOADED:"
+        puts mempool
 
-        # # Mine test block
-        # block = Block.new(rand(8).to_s, rand(8).to_s, "315ndvwi7data8731")
-        # block2 = Block.new(rand(8).to_s, rand(8).to_s, "121DATvwi7data8731")
-        # # Add block to blockchain
-        # blockchain.add_block(block)
-        # blockchain.add_block(block2)
-        # Print test blocks
-        puts "With test blocks:"
-        puts blockchain.ledger["data"][0]
-        puts "NEXT"
-        puts blockchain.ledger["data"][1]
-        
-        # new_block = Block.new(blockchain.ledger[-1].hash)
-        
-        # Write block to ledger
-        # Mine.write_ledger(blockchain.ledger["data"])
+        # Mine block
+        # Ingests mempool data, it's merkle root and prior hash
+        new_block = nil
+        if chain.any?
+            chain << Block.new(chain[-1].to_s, Digest::SHA256.hexdigest(rand(8).to_s), mempool.to_s)
+        else
+            chain << Block.new("00000000", Digest::SHA256.hexdigest(rand(8).to_s), mempool.to_s)
+        end
+
+        puts "New block:"
+        pp chain[-1]
+
+        # Write block to ledger backup
+        Mine.write_ledger(chain)
+
+        return chain
     end
 
     # Reads ledger
@@ -42,6 +43,7 @@ module Mine
         # If file is empty, ask to make first block
         if File.zero?(address) 
             puts "No ledger data found, create genesis block?"
+            ledger_hash = []
         else
         # Else ingest file JSON data
             file = File.read(address)
