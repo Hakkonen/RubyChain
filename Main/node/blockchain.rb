@@ -5,20 +5,25 @@ class Blockchain
 
     def initialize()
         # Takes in an array of blocks
-        @ledger = []
+        @ledger = {
+            "data" => []
+        }
     end
 
     def add_block(block)
-        @ledger << block.to_json
+        @ledger["data"] << block.to_json
         # puts @ledger
     end
 
-    def ledger()
-        return @ledger
+    def marshal_dump
+        [@ledger]
     end
 
-    # def output()
-    #     output = {}
+    def marshal_load array
+        @ledger = array
+    end
 
+    # def ledger()
+    #     return @ledger
     # end
 end
