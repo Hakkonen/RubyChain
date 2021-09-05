@@ -14,7 +14,6 @@ def load_ledger(input_chain)
 
     # Prints loaded blockchain
     puts "Blockchain loaded"
-    # pp input_chain
     puts ""
 
     menu()
@@ -23,6 +22,8 @@ end
 # Verify Ledger
 def ver_ledger(input_chain)
     Verify.chain(input_chain)
+
+    menu()
 end
 
 # Mine blocks
@@ -47,9 +48,9 @@ end
 
 # Close node
 def close_node(chain, address="./ledger/ledger.json")
+    puts "Exiting..."
     file = File.read(address)
     ledger_hash = JSON.parse(file)
-    pp ledger_hash
 end
 
 # Welcome menu
@@ -58,7 +59,6 @@ def menu()
     selection = gets.chomp()
     if selection == "1"
         load_ledger(@blockchain)
-        menu()
     elsif selection == "2"
         ver_ledger(@blockchain)
     elsif selection == "3"

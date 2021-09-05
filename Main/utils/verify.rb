@@ -14,10 +14,11 @@ module Verify
             end
         end
 
-        # Else return false, no match found
+        # Else check if last block
         if block.id.to_s == "1"
-            puts "CHAIN VALID"
+            puts "CHAIN VALID", ""
         else
+            # Otherwise return INVALID, blockchain is broken
             puts "INVALID - Block: " + block.id.to_s + " has no correlating hash"
             return false
         end
@@ -25,10 +26,12 @@ module Verify
 
     # Takes in chain and checks all hashes against previous hashes
     def Verify.chain(chain)
+        id = (chain.ledger["mainnet"].length.to_i - 1)
+
         # Iterates through whole array
-        chain.ledger["mainnet"].each do |block|
-            # Then compares prev_hash to other blocks to find a match
-            Verify.correlate_hash(chain, block)
+        while id >= 0
+            Verify.correlate_hash(chain, chain.ledger["mainnet"][id])
+            id -= 1
         end
     end
 end

@@ -35,17 +35,8 @@ module Mine
         # Mine block
         # Ingests mempool data, it's merkle root and prior hash
         if chain.ledger["mainnet"].any?
-            # Creates new Block from JSON and appends to chain ledger
-            begin
-                # Creates new Block from cache and appends to chain ledger
-                chain.ledger["mainnet"] << Block.new(chain.ledger["mainnet"][-1].hash, Digest::SHA256.hexdigest(rand(8).to_s), mempool.to_s, chain.ledger["mainnet"][-1].id.to_s)
-            rescue
-                # This rescue will engage if the JSON ledger hsa just been loaded and the last block in the loaded array is a JSON type
-                pp chain.ledger["mainnet"][-1]
-                last_block = Block.json_create(chain.ledger["mainnet"][-1])
-
-                chain.ledger["mainnet"] << Block.new(last_block.hash, Digest::SHA256.hexdigest(rand(8).to_s), mempool.to_s, last_block.id.to_s)
-            end
+            # Creates new Block from cache and appends to chain ledger
+            chain.ledger["mainnet"] << Block.new(chain.ledger["mainnet"][-1].hash, Digest::SHA256.hexdigest(rand(8).to_s), mempool.to_s, chain.ledger["mainnet"][-1].id.to_s)
         else
             # Creates new genesis Block and appends to chain ledger 
             chain.ledger["mainnet"] << Block.new("00000000", "00000000", mempool.to_s, "0")
@@ -69,12 +60,12 @@ module Mine
             ledger_hash = JSON.parse(file)
         end
 
+        # Converts JSON file to array of objects
         objectify = []
         ledger_hash.each do |block|
             objectify << Block.json_create(block)
         end
 
-        pp objectify
         # Return JSON parsed ledger
         return objectify
     end
