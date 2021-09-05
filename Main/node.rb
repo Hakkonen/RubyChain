@@ -4,6 +4,7 @@ require "./node/mine"
 require "./wallet"
 require "./node/block"
 require "./node/blockchain.rb"
+require "./utils/verify.rb"
 
 require "pp"
 
@@ -13,18 +14,15 @@ def load_ledger(input_chain)
 
     # Prints loaded blockchain
     puts "Blockchain loaded"
-    pp input_chain
+    # pp input_chain
     puts ""
-
-    # puts "Array elements:"
-    # puts input_chain.ledger["mainnet"].length.to_s
 
     menu()
 end
 
 # Verify Ledger
-def ver_ledger()
-    puts "Not built"
+def ver_ledger(input_chain)
+    Verify.chain(input_chain)
 end
 
 # Mine blocks
@@ -36,22 +34,11 @@ end
 
 # View blocks
 def view_chain(input_chain)
-    counter = (input_chain.ledger["mainnet"].length).to_i
-    # puts "LAST BLOCK"
-    # puts input_chain.ledger["mainnet"][-1].hash
-    # puts input_chain.ledger["mainnet"][-1]
-    # while counter > 0
-    #     puts "Block" + counter.to_s
-    #     puts input_chain.ledger["mainnet"][counter]
-    #     counter -= 1
-    # end
-
     # Print blocks
-    counter = 0
+    counter = 1
     input_chain.ledger["mainnet"].each do |block|
         puts "BLOCK " + counter.to_s
-        puts block
-        puts block.hash
+        pp block
         counter += 1
     end
 

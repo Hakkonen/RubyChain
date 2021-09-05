@@ -5,6 +5,7 @@ require "pp"
 require "json"
 
 class Block
+    attr_reader :id
     attr_reader :hash
     attr_reader :prev_hash
     attr_reader :time_stamp
@@ -13,16 +14,19 @@ class Block
     attr_reader :data
     attr_reader :difficulty
 
-    def initialize(prev_hash, merkle_r, data, difficulty="000", hash=nil, nonce=nil, time_Stamp=nil)
+    def initialize(prev_hash, merkle_r, data, id, difficulty="000", hash=nil, nonce=nil, time_Stamp=nil)
         @prev_hash = prev_hash
         @merkle_r = merkle_r
         @data = data
-
         @difficulty = difficulty # Amount of leading zeroes
 
+        # Hash/Nonce/Time fields will be empty in a new block mine
+        # If fields are filled it will be from regenerating a JSON object
         if hash == nil && nonce == nil && time_stamp == nil
+            @id = (id.to_i + 1).to_s
             @hash, @nonce, @time_stamp = mine_block(prev_hash, merkle_r, data, difficulty)
         else
+            @id = id.to_s
             @hash = hash
             @nonce = nonce
             @time_stamp = time_stamp
@@ -32,6 +36,7 @@ class Block
     def to_json(*args)
         {
         JSON.create_id => self.class.name,
+        "id" => id,
         "hash" => hash,
         "prev_hash" => prev_hash,
         "merkle_r" => merkle_r,
@@ -43,7 +48,7 @@ class Block
     end
     
     def self.json_create(h)
-        new(h["prev_hash"], h["merkle_r"], h["data"], h["difficulty"], h["hash"], h["nonce"], h["time_stamp"])
+        new(h["prev_hash"], h["merkle_r"], h["data"], h["id"], h["difficulty"], h["hash"], h["nonce"], h["time_stamp"])
     end
 
     def mine_block(input_hash, input_merkle, input_data, leading_0)
