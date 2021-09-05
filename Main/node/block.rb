@@ -13,19 +13,26 @@ class Block
     attr_reader :data
     attr_reader :difficulty
 
-    def initialize(prev_hash, merkle_r, data, difficulty="000")
+    def initialize(prev_hash, merkle_r, data, difficulty="000", hash=nil, nonce=nil, time_Stamp=nil)
         @prev_hash = prev_hash
         @merkle_r = merkle_r
         @data = data
 
         @difficulty = difficulty # Amount of leading zeroes
-        @hash, @nonce, @time_stamp = mine_block(prev_hash, merkle_r, data, difficulty)
+
+        if hash == nil && nonce == nil && time_stamp == nil
+            @hash, @nonce, @time_stamp = mine_block(prev_hash, merkle_r, data, difficulty)
+        else
+            @hash = hash
+            @nonce = nonce
+            @time_stamp = time_stamp
+        end
     end
 
     def to_json(*args)
         {
         JSON.create_id => self.class.name,
-        "hash" => hash.to_s,
+        "hash" => hash,
         "prev_hash" => prev_hash,
         "merkle_r" => merkle_r,
         "data" => data,
@@ -36,7 +43,7 @@ class Block
     end
     
     def self.json_create(h)
-        new(h["hash"], h["prev_hash"], h["merkle_r"], h["data"], h["time_stamp"], h["nonce"], h["difficulty"])
+        new(h["prev_hash"], h["merkle_r"], h["data"], h["difficulty"], h["hash"], h["nonce"], h["time_stamp"])
     end
 
     def mine_block(input_hash, input_merkle, input_data, leading_0)

@@ -16,6 +16,9 @@ def load_ledger(input_chain)
     pp input_chain
     puts ""
 
+    # puts "Array elements:"
+    # puts input_chain.ledger["mainnet"].length.to_s
+
     menu()
 end
 
@@ -26,20 +29,29 @@ end
 
 # Mine blocks
 def mine_blocks(input_chain)
-    input_chain.ledger["mainnet"] = Mine.run(input_chain.ledger["mainnet"])
+    input_chain = Mine.run(input_chain)
 
     menu()
 end
 
 # View blocks
 def view_chain(input_chain)
-    pp input_chain
+    counter = (input_chain.ledger["mainnet"].length).to_i
+    # puts "LAST BLOCK"
+    # puts input_chain.ledger["mainnet"][-1].hash
+    # puts input_chain.ledger["mainnet"][-1]
+    # while counter > 0
+    #     puts "Block" + counter.to_s
+    #     puts input_chain.ledger["mainnet"][counter]
+    #     counter -= 1
+    # end
 
     # Print blocks
     counter = 0
     input_chain.ledger["mainnet"].each do |block|
         puts "BLOCK " + counter.to_s
         puts block
+        puts block.hash
         counter += 1
     end
 
@@ -73,8 +85,8 @@ def menu()
 end
 
 def main() 
-    # Load blockchain cache
-    @blockchain = Blockchain.new()
+    # Load blockchain cache from class
+    @blockchain = Blockchain.new([])
 
     menu()
 end
