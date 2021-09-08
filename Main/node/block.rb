@@ -14,7 +14,7 @@ class Block
     attr_reader :data
     attr_reader :difficulty
 
-    def initialize(prev_hash, merkle_r, data, id, difficulty="000", hash=nil, nonce=nil, time_Stamp=nil)
+    def initialize(prev_hash, merkle_r, data, id, difficulty="00000", hash=nil, nonce=nil, time_Stamp=nil)
         @prev_hash = prev_hash
         @merkle_r = merkle_r
         @data = data
@@ -52,10 +52,12 @@ class Block
     end
 
     def mine_block(input_hash, input_merkle, input_data, leading_0)
+
         # Init nonce
         nonce = 0
         hash_attempt = ""
         time = Time.now.to_i
+        t1 = Time.now
 
         # Mine block
         loop do
@@ -67,6 +69,9 @@ class Block
             break if (hash_attempt.to_s.start_with?(leading_0.to_s) == true)
             nonce += 1
         end
+        t2 = Time.now
+        delta = t2 - t1
+        puts "Elapsed Hash Time: %.4f seconds, Hashes Calculated: %d" % [delta,nonce]
 
         #pp hash, nonce, time_stamp
         return [hash_attempt, nonce, time]

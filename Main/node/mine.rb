@@ -1,36 +1,34 @@
 # Runs mining operation
 
 require "./node/block"
-require "./node/blockchain.rb"
+require "./node/blockchain"
+require "./utils/tx"
 
 require "json"
 require "digest"
 require "pp"
 
-def mempool_loader(address="./mempool_dir/mempool.txt")
-    # Opens mempool from given address and returns text file to var
-
-    mempool_load = nil
-    File.open(address, "r+") do |f|
-        # Reads mempool data
-        mempool_load = f.read()
-
-        # Empties mempool after load, so transactions aren't duplicated
-        f.truncate(0)
-    end
-    puts "MEMPOOL LOADED:"
-    puts mempool_load
-
-    return mempool_load
-end
-
+# TODO: Condense code! Possible combine read/write funcs into one?
 
 module Mine
+    
     # Runs mining operations
-    def Mine.run(chain)
+    def Mine.run(chain, address)
 
         # Open mempool data
-        mempool = mempool_loader()
+        # mempool = [] 
+        mempool = Mine.read_mempool()
+
+        # Clear mempool to not reuse Tx's
+        Mine.clear_mempool()
+
+        # TODO: Create address that gives rewards from limited pool
+        # Add miner's reward
+        puts "Mempool is:"
+        pp mempool
+        puts "Mempool plus address is:"
+        mempool << Tx.new("MASTER", address.to_s, "1")
+        pp mempool
 
         # Mine block
         # Ingests mempool data, it's merkle root and prior hash
@@ -41,6 +39,8 @@ module Mine
             # Creates new genesis Block and appends to chain ledger 
             chain.ledger["mainnet"] << Block.new("00000000", "00000000", mempool.to_s, "0")
         end
+
+        puts chain.ledger["mainnet"][-1].hash
 
         # Write block to ledger backup
         Mine.write_ledger(chain.ledger["mainnet"])
@@ -76,6 +76,46 @@ module Mine
         File.open(address, "w+") do |file|
             # Write JSON blockchain data to file
             file.write(ledger.to_json)
+        end
+    end
+
+    # Reads mempool JSON into cache array
+    def Mine.read_mempool(address="./mempool_dir/mempool.json")
+        mempool_cache = []
+        # Open mempool into cache
+        if File.zero?(address) 
+            puts "No mempool data"
+            return mempool_cache
+        else
+            file = File.read(address)
+            mempool_res = JSON.parse(file)
+
+            mempool_res.each do |e|
+                puts "ELEMENT"
+                pp e
+                mempool_cache << Tx.json_create(e)
+            end
+        end
+        return mempool_cache
+    end
+
+    # Writes cached mempool into JSON file
+    def Mine.write_mempool(mempool, address="./mempool_dir/mempool.json")
+        # Save mempool into file
+        File.open(address, "w+") do |file|
+            # Write JSON blockchain data to file
+            file.write(mempool.to_json)
+        end
+    end
+
+    def Mine.create_tx(from, to, amount)
+        Tx.new(from, to, amount)
+    end
+
+    def Mine.clear_mempool(address="./mempool_dir/mempool.json")
+        File.open(address, "w+") do |file|
+            file.truncate(0)
+            puts "Mempool cleared..."
         end
     end
 end
