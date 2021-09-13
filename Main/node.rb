@@ -6,6 +6,7 @@ require "./node/blockchain"
 require "./utils/verify"
 require "./utils/loop"
 require "./utils/tx"
+require "./utils/JsonIO.rb"   # Imports read write func for JSON data
 
 require "sinatra"
 require 'active_support/time'
@@ -15,7 +16,8 @@ require "pp"
 # Creates cached chain
 BLOCKCHAIN = Blockchain.new([])
 # Loads JSON into cache
-BLOCKCHAIN.ledger["mainnet"] = Mine.read_ledger()
+# BLOCKCHAIN.ledger["mainnet"] = Mine.read_ledger()
+BLOCKCHAIN.ledger["mainnet"] = JsonIO.read("./ledger/ledger.json", Block)
 puts "Blockchain loaded"
 
 puts "Please enter your RubyChain address for mining rewards:"
@@ -52,12 +54,13 @@ post "/transaction" do
     puts new_tx
 
     # TODO: Run an asymmetric signature check on sender's Tx
+    # Decrypt signature with public key?
 
     # TODO: Run verify on blockchain to validate that funds are available
     # Will need to parse the chain and add up all calculations from send address
 
     # Read mempool JSON into cache
-    mempool_cache = Mine.read_mempool()
+    mempool_cache = JsonIO.read("./ledger/ledger.json", Tx)
 
     # TODO: Checksum against account balances
 
@@ -68,7 +71,8 @@ post "/transaction" do
     pp mempool_cache
 
     # Write mempool to JSON
-    Mine.write_mempool(mempool_cache)
+    # Mine.write_mempool(mempool_cache)
+    JsonIO.write("./mempool_dir/mempool.json", mempool_cache)
 end
 
 # TODO: View Blockchain

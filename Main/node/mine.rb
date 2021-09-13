@@ -3,12 +3,11 @@
 require "./node/block"
 require "./node/blockchain"
 require "./utils/tx"
+require "./utils/JsonIO.rb"   # Imports read write func for JSON data
 
 require "json"
 require "digest"
 require "pp"
-
-# TODO: Condense code! Possible combine read/write funcs into one?
 
 module Mine
     
@@ -16,19 +15,13 @@ module Mine
     def Mine.run(chain, address)
 
         # Open mempool data
-        # mempool = [] 
-        mempool = Mine.read_mempool()
+        mempool = JsonIO.read("./mempool_dir/mempool.json", Tx)
 
-        # Clear mempool to not reuse Tx's
-        Mine.clear_mempool()
+        pp mempool
 
         # TODO: Create address that gives rewards from limited pool
         # Add miner's reward
-        puts "Mempool is:"
-        pp mempool
-        puts "Mempool plus address is:"
         mempool << Tx.new("MASTER", address.to_s, "1")
-        pp mempool
 
         # Mine block
         # Ingests mempool data, it's merkle root and prior hash
@@ -40,72 +33,13 @@ module Mine
             chain.ledger["mainnet"] << Block.new("00000000", "00000000", mempool.to_s, "0")
         end
 
-        puts chain.ledger["mainnet"][-1].hash
-
         # Write block to ledger backup
-        Mine.write_ledger(chain.ledger["mainnet"])
+        JsonIO.write("./ledger/ledger.json", chain.ledger["mainnet"])
+
+        # Clear mempool to not reuse Tx's
+        Mine.clear_mempool()
 
         return chain
-    end
-
-    # Reads ledger
-    def Mine.read_ledger(address="./ledger/ledger.json")
-        # If file is empty, ask to make first block
-        if File.zero?(address) 
-            puts "No ledger data found, create genesis block?"
-            ledger_hash = []
-        else
-        # Else ingest file JSON data
-            file = File.read(address)
-            ledger_hash = JSON.parse(file)
-        end
-
-        # Converts JSON file to array of objects
-        objectify = []
-        ledger_hash.each do |block|
-            objectify << Block.json_create(block)
-        end
-
-        # Return JSON parsed ledger
-        return objectify
-    end
-
-    # Writes to ledger
-    def Mine.write_ledger(ledger, address="./ledger/ledger.json")
-        # Open ledger.json
-        File.open(address, "w+") do |file|
-            # Write JSON blockchain data to file
-            file.write(ledger.to_json)
-        end
-    end
-
-    # Reads mempool JSON into cache array
-    def Mine.read_mempool(address="./mempool_dir/mempool.json")
-        mempool_cache = []
-        # Open mempool into cache
-        if File.zero?(address) 
-            puts "No mempool data"
-            return mempool_cache
-        else
-            file = File.read(address)
-            mempool_res = JSON.parse(file)
-
-            mempool_res.each do |e|
-                puts "ELEMENT"
-                pp e
-                mempool_cache << Tx.json_create(e)
-            end
-        end
-        return mempool_cache
-    end
-
-    # Writes cached mempool into JSON file
-    def Mine.write_mempool(mempool, address="./mempool_dir/mempool.json")
-        # Save mempool into file
-        File.open(address, "w+") do |file|
-            # Write JSON blockchain data to file
-            file.write(mempool.to_json)
-        end
     end
 
     def Mine.create_tx(from, to, amount)
