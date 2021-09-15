@@ -11,7 +11,7 @@ require 'securerandom'
 
 module KeyChain
     def KeyChain.keypair_gen(string)
-        # TODO: Change to return an object
+        # Returns private key [0] and public key [1]
         result = []
 
         # Define security group
@@ -26,10 +26,10 @@ module KeyChain
 
         # Generate public address from the private key integer
         ecc_public_key = group.generator.multiply_by_scalar(private_key)
-
         puts "Public key: "
         puts '  x: %#x' % ecc_public_key.x
         puts '  y: %#x' % ecc_public_key.y
+
         result.push ecc_public_key
 
         return result
@@ -96,28 +96,32 @@ module KeyChain
         return results
     end
 
-    def KeyChain.Sign(private_key, message)
+    # USAGE: input private key and string to sign
+    def KeyChain.sign(private_key, string)
         group = ECDSA::Group::Secp256k1
-        digest = Digest::SHA2.digest(message)
+        digest = Digest::SHA2.digest(string)
         signature = nil
         while signature.nil?
             temp_key = 1 + SecureRandom.random_number(group.order - 1)
             signature = ECDSA.sign(group, Integer(private_key.to_s), digest, temp_key)
         end
-        puts 'signature: '
-        puts '  r: %#x' % signature.r
-        puts '  s: %#x' % signature.s
+        # puts 'signature: '
+        # puts '  r: %#x' % signature.r
+        # puts '  s: %#x' % signature.s
 
         signature_der_string = ECDSA::Format::SignatureDerString.encode(signature)
 
         return signature_der_string
     end
 
-    def KeyChain.Verify(public_key, string)
-        signature = ECDSA::Format::SignatureDerString.decode(string)
-        digest = Digest::SHA2.digest("Hello, world!")
+    # USAGE: Input public key, der formatted signature, and original string
+    def KeyChain.verify(public_key, der_string, string)
+        signature = ECDSA::Format::SignatureDerString.decode(der_string)
+        digest = Digest::SHA2.digest(string)
 
         valid = ECDSA.valid_signature?(public_key, digest, signature)
-        puts "valid: #{valid}"
+        puts "Signature validity: #{valid}"
+        # Returns true or false
+        return valid
     end
 end

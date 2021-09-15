@@ -8,14 +8,6 @@ require "./wallet/keychain"
 URL = "http://localhost"
 PORT = 4567
 
-def send_tx()
-    from = "jay"
-    to = "rey"
-    amount = "1"
-    Faraday.post("#{URL}:#{PORT}/transaction", from: from, to: to, amount: amount)
-    puts "sent"
-end
-
 # Keyphrase read / write function
 def write_key(data, address="./wallet/keyphrase.txt")
     File.open(address, "w") do |file|
@@ -33,11 +25,16 @@ def read_key(address="./wallet/keyphrase.txt")
     end
 end
 
-def main()
+# Gets account balance
+def get_balance(address)
+    # Sends address to server
+    Faraday.get("#{URL}:#{PORT}/balance", address: address).body
+    # Returns response
+    # puts "list:"
+    # puts tx_list
+end
 
-    # # Test tx mempool
-    # new_tx = Tx.new("jay", "tessa", 1)
-    # Faraday.post("#{URL}:#{PORT}/transaction", from: "Jayden", to: "Tessa", amount: 1)
+def main()
 
     # Load or input keyphrase
     puts "Menu:", "1. Enter keyphrase", "2. Load keyphrase"
@@ -55,16 +52,17 @@ def main()
 
     # Generate public/private key pair from memnonic
     private_key, public_key = KeyChain.keypair_gen(memnonic)
-    # To turn private key into integer: Integer("0x" + private_key.to_s)
 
     # # TODO: Save key pair to file
-    # puts "Save keyphrase? (Y/n)"
-    # selection = gets.chomp()
-    # if selection == "y" || selection == "Y"
-    #     # Saves keyphrase to txt file
-    #     # TODO: encrypt
-    #     write_key(memnonic.to_s)
-    # end
+    if selection == "1"
+        puts "Save keyphrase? (Y/n)"
+        selection = gets.chomp()
+        if selection == "y" || selection == "Y"
+            # Saves keyphrase to txt file
+            # TODO: encrypt
+            write_key(memnonic.to_s)
+        end
+    end
 
     # Generate public address
     pub_address = KeyChain.public_address_gen(public_key)
@@ -73,9 +71,21 @@ def main()
         puts add.to_s
     end
 
+    # Get tx variables
+    from = "1En7XFBy8CagDCbTTsA6ooAAN79hzNDRG7"
+    to = "1AJuX2PTFbCXhmuDTsjEEyshj7SYcNi3G4"
+    amount = 1
+    signature = KeyChain.sign(private_key, to)
+
     # Test sign
-    signature = KeyChain.Sign(private_key, "Hello, world!")
-    KeyChain.Verify(public_key, signature)
+    # signature = KeyChain.sign(private_key, "Hello, world!")
+    # KeyChain.verify(public_key, signature, "Hello, world!")
+
+    # # Test tx mempool
+    # new_tx = Tx.new(from, to, amount, signature)
+    # Faraday.post("#{URL}:#{PORT}/transaction", from: from, to: to, amount: amount, signature: signature)
+
+    get_balance(pub_address)
 
     # TODO: Display balance
     # Will require POSTing to node

@@ -1,5 +1,7 @@
 # The class for transactions
 
+require "./wallet/keychain"
+
 require "digest"
 require "json"
 
@@ -7,11 +9,13 @@ class Tx
     attr_reader :sender
     attr_reader :receiver
     attr_reader :amount
+    attr_reader :signature
     attr_reader :merkle_hash
 
-    def initialize(sender, receiver, amount, merkle_hash=nil)
-        @sender = sender
-        @receiver = receiver
+    def initialize(sender, receiver, amount, signature, merkle_hash=nil)
+        @sender = sender # Public address
+        @receiver = receiver # Public key hash
+        @signature = signature
         @amount = amount
 
         # Allows for reconstruction of merkle from JSON object
@@ -33,13 +37,13 @@ class Tx
         "sender" => sender,
         "receiver" => receiver,
         "amount" => amount,
+        "signature" => signature,
         "merkle_hash" => merkle_hash.to_s
         }.to_json(*args)
     end
 
     # Rebuilds from JSON object
     def self.json_create(h)
-        new(h["sender"], h["receiver"], h["amount"], 
-        h["merkle_hash"])
+        new(h["sender"], h["receiver"], h["amount"], h["signature"], h["merkle_hash"])
     end
 end

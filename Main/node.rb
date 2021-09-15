@@ -11,6 +11,7 @@ require "./utils/JsonIO.rb"   # Imports read write func for JSON data
 require "sinatra"
 require 'active_support/time'
 
+require "json"
 require "pp"
 
 # Creates cached chain
@@ -34,7 +35,7 @@ end
 
 # Mines a block on access
 get "/mine" do
-    count = 5
+    count = 1
     while count > 0
         "Mining"
         mine_blocks(BLOCKCHAIN, ADDRESS)
@@ -49,20 +50,21 @@ post "/transaction" do
     mempool_cache = []
 
     # Create new tx object
-    from, to, amount = params.values_at("from", "to", "amount")
-    new_tx = Tx.new(from, to, amount)
+    from, to, amount, signature = params.values_at("from", "to", "amount", "signature")
+    new_tx = Tx.new(from, to, amount, signature)
     puts new_tx
 
     # TODO: Run an asymmetric signature check on sender's Tx
     # Decrypt signature with public key?
     # 1. Parse JSON ledger for BTC to spend
+    # 2. Confirm blockchain hashes have not been modified
+    #   to ensure that teh ledger has not been tampered with.
 
     # TODO: Run verify on blockchain to validate that funds are available
     # Will need to parse the chain and add up all calculations from send address
 
-
     # Read mempool JSON into cache
-    mempool_cache = JsonIO.read("./ledger/ledger.json", Tx)
+    mempool_cache = JsonIO.read("./mempool_dir/mempool.json", Tx)
 
     # TODO: Checksum against account balances
 
@@ -75,6 +77,32 @@ post "/transaction" do
     # Write mempool to JSON
     # Mine.write_mempool(mempool_cache)
     JsonIO.write("./mempool_dir/mempool.json", mempool_cache)
+end
+
+get "/balance" do
+    # Receives bitcoin address, parses database, and returns list of relevant tx's
+    address = params.values_at("address")[0][0]
+    puts "Address: " + address.to_s
+
+    # Open transaction list for return
+    tx_list = []
+    
+    # Open blockchain JSON to search
+    blockchain = JsonIO.read("./ledger/ledger.json", Block)
+    blockchain.each do |block|
+        puts JSON.parse(block.data)
+        parsed_data = JSON.parse(block.data)
+        if block.data.include? address
+            parsed_data.each do |tx|
+                tx_list << Tx.json_create(tx)
+            end
+        end
+    end
+
+    puts "tx list:"
+    pp tx_list
+
+    return tx_list
 end
 
 # TODO: View Blockchain

@@ -15,13 +15,15 @@ module Mine
     def Mine.run(chain, address)
 
         # Open mempool data
-        mempool = JsonIO.read("./mempool_dir/mempool.json", Tx)
+        # mempool = JsonIO.read("./mempool_dir/mempool.json", Tx)
+        mempool = File.read("./mempool_dir/mempool.json")
 
+        puts "mempool: "
         pp mempool
 
         # TODO: Create address that gives rewards from limited pool
         # Add miner's reward
-        mempool << Tx.new("MASTER", address.to_s, "1")
+        # mempool << Tx.new("MASTER", address.to_s, "1", )
 
         # Mine block
         # Ingests mempool data, it's merkle root and prior hash
