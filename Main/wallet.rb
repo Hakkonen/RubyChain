@@ -28,10 +28,9 @@ end
 # Gets account balance
 def get_balance(address)
     # Sends address to server
-    Faraday.get("#{URL}:#{PORT}/balance", address: address).body
+    res = Faraday.get("#{URL}:#{PORT}/balance", address: address).body
     # Returns response
-    # puts "list:"
-    # puts tx_list
+    puts res
 end
 
 def main()

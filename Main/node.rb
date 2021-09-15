@@ -86,15 +86,21 @@ get "/balance" do
 
     # Open transaction list for return
     tx_list = []
+    balance = 0
     
     # Open blockchain JSON to search
     blockchain = JsonIO.read("./ledger/ledger.json", Block)
     blockchain.each do |block|
-        puts JSON.parse(block.data)
+        # Parses string into JSON to allow iteration
         parsed_data = JSON.parse(block.data)
-        if block.data.include? address
-            parsed_data.each do |tx|
-                tx_list << Tx.json_create(tx)
+        # Unapcks each JSON object
+        parsed_data.each do |tx|
+            # Reforms Tx object from data
+            tx_cache = Tx.json_create tx
+            # Checks if transaction contains address
+            if tx_cache.receiver == address
+                tx_list << tx_cache
+                balance += tx_cache.amount.to_i
             end
         end
     end
@@ -102,7 +108,8 @@ get "/balance" do
     puts "tx list:"
     pp tx_list
 
-    return tx_list
+    # Prints object to page / returns value to program
+    "#{balance}"
 end
 
 # TODO: View Blockchain
