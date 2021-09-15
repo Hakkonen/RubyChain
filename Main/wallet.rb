@@ -54,16 +54,28 @@ def main()
     end
 
     # Generate public/private key pair from memnonic
-    priv_key, public_key = KeyChain.keypair_gen(memnonic)
+    private_key, public_key = KeyChain.keypair_gen(memnonic)
+    # To turn private key into integer: Integer("0x" + private_key.to_s)
 
-    # TODO: Save key pair to file
-    puts "Save keyphrase? (Y/n)"
-    selection = gets.chomp()
-    if selection == "y" || selection == "Y"
-        # Saves keyphrase to txt file
-        # TODO: encrypt
-        write_key(memnonic.to_s)
+    # # TODO: Save key pair to file
+    # puts "Save keyphrase? (Y/n)"
+    # selection = gets.chomp()
+    # if selection == "y" || selection == "Y"
+    #     # Saves keyphrase to txt file
+    #     # TODO: encrypt
+    #     write_key(memnonic.to_s)
+    # end
+
+    # Generate public address
+    pub_address = KeyChain.public_address_gen(public_key)
+    puts "Public address:"
+    pub_address.each do |add|
+        puts add.to_s
     end
+
+    # Test sign
+    signature = KeyChain.Sign(private_key, "Hello, world!")
+    KeyChain.Verify(public_key, signature)
 
     # TODO: Display balance
     # Will require POSTing to node

@@ -55,9 +55,11 @@ post "/transaction" do
 
     # TODO: Run an asymmetric signature check on sender's Tx
     # Decrypt signature with public key?
+    # 1. Parse JSON ledger for BTC to spend
 
     # TODO: Run verify on blockchain to validate that funds are available
     # Will need to parse the chain and add up all calculations from send address
+
 
     # Read mempool JSON into cache
     mempool_cache = JsonIO.read("./ledger/ledger.json", Tx)

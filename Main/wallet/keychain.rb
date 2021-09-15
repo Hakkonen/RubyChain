@@ -14,23 +14,22 @@ module KeyChain
         # TODO: Change to return an object
         result = []
 
-        # Generate private key
-        private_key = Digest::SHA256.hexdigest string
-        puts "Private key:"
-        pp private_key
-        result.push private_key
-
-        # Generate ECC public key
+        # Define security group
         group = ECDSA::Group::Secp256k1
 
-        private_key_unpacked = private_key.unpack("H*")[0].to_i 
+        # Generate private key
+        private_key = Integer("0x" + Digest::SHA256.hexdigest(string).to_s).to_i
+        puts "Private key:"
+        pp private_key
+        puts 'private key: %#x' % private_key
+        result.push private_key
 
         # Generate public address from the private key integer
-        ecc_public_key = group.generator.multiply_by_scalar(private_key_unpacked)
+        ecc_public_key = group.generator.multiply_by_scalar(private_key)
 
-        puts "Public key:"
-        pp ecc_public_key.x
-        pp ecc_public_key.y
+        puts "Public key: "
+        puts '  x: %#x' % ecc_public_key.x
+        puts '  y: %#x' % ecc_public_key.y
         result.push ecc_public_key
 
         return result
@@ -78,7 +77,7 @@ module KeyChain
         hash_address = network_key + checksum_key
         # pp hash_address
 
-        results.push hash_address
+        # results.push hash_address
 
         ##################
         # Base58 key
@@ -89,11 +88,36 @@ module KeyChain
 
         add = [hash_address].pack('H*')
         base58_key = Base58.binary_to_base58(add, :bitcoin, true)
-        pp base58_key
+        # pp base58_key
 
         results.push base58_key
 
         # Returns array
         return results
+    end
+
+    def KeyChain.Sign(private_key, message)
+        group = ECDSA::Group::Secp256k1
+        digest = Digest::SHA2.digest(message)
+        signature = nil
+        while signature.nil?
+            temp_key = 1 + SecureRandom.random_number(group.order - 1)
+            signature = ECDSA.sign(group, Integer(private_key.to_s), digest, temp_key)
+        end
+        puts 'signature: '
+        puts '  r: %#x' % signature.r
+        puts '  s: %#x' % signature.s
+
+        signature_der_string = ECDSA::Format::SignatureDerString.encode(signature)
+
+        return signature_der_string
+    end
+
+    def KeyChain.Verify(public_key, string)
+        signature = ECDSA::Format::SignatureDerString.decode(string)
+        digest = Digest::SHA2.digest("Hello, world!")
+
+        valid = ECDSA.valid_signature?(public_key, digest, signature)
+        puts "valid: #{valid}"
     end
 end
