@@ -12,7 +12,7 @@ require "pp"
 module Mine
     
     # Runs mining operations
-    def Mine.run(chain, address)
+    def Mine.run(chain, address, difficulty="000000")
 
         # Open mempool data
         # mempool = JsonIO.read("./mempool_dir/mempool.json", Tx)
@@ -32,7 +32,7 @@ module Mine
             chain.ledger["mainnet"] << Block.new(chain.ledger["mainnet"][-1].hash, Digest::SHA256.hexdigest(rand(8).to_s), mempool.to_s, chain.ledger["mainnet"][-1].id.to_s)
         else
             # Creates new genesis Block and appends to chain ledger 
-            chain.ledger["mainnet"] << Block.new("00000000", "00000000", mempool.to_s, "0")
+            chain.ledger["mainnet"] << Block.new("00000000", "00000000", mempool.to_s, "0", difficulty)
         end
 
         # Write block to ledger backup

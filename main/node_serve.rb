@@ -1,4 +1,4 @@
-# Runs node and mines blocks adding data from mempool to the blockchain
+# Serves blocklchain data to clients
 
 require "./node/mine"
 require "./node/block"
@@ -14,15 +14,96 @@ require 'active_support/time'
 require "json"
 require "pp"
 
-# Creates cached chain
-BLOCKCHAIN = Blockchain.new([])
-# Loads JSON into cache
-# BLOCKCHAIN.ledger["mainnet"] = Mine.read_ledger()
-BLOCKCHAIN.ledger["mainnet"] = JsonIO.read("./ledger/ledger.json", Block)
-puts "Blockchain loaded"
+## TODO:
+# 1. Test move (manually mine blocks)
+# 2. Live mode (mines automatically)
 
-puts "Please enter your RubyChain address for mining rewards:"
-ADDRESS = gets.chomp()
+# Gets current blockchain and updates global cache
+$blockchain = Blockchain.new([])
+def get_chain()
+    # Loads JSON into cache
+    # BLOCKCHAIN.ledger["mainnet"] = Mine.read_ledger()
+    $blockchain.ledger["mainnet"] = JsonIO.read("./ledger/ledger.json", Block)
+    puts "Blockchain loaded"
+end
+get_chain()
+
+# # Select to load from saved key or enter new key
+# puts "Enter PubKey for mining rewards:"
+# puts "1. Load saved key"
+# puts "2. Enter new key"
+# selection = gets.chomp()
+
+# # Read / write key funcs
+# # Loads key from default address
+# def read_key(address="./node/keyphrase.txt")
+#     if File.zero?(address)
+#         puts "No read data found"
+#         return false
+#     else
+#         file = File.read(address).to_s
+#         return file
+#     end
+# end
+# # Writes key to default address
+# def write_key(data, address="./node/keyphrase.txt")
+#     File.open(address, "w") do |file|
+#         file.write(data)
+#     end
+# end
+
+# if selection == "1"
+#     $address = read_key()
+# elsif selection == "2"
+#     puts "Please enter your RubyChain address for mining rewards:"
+#     $address = gets.chomp()
+
+#     # Save key?
+#     puts "Overwrite saved key? (Y/n):"
+#     selection = gets.chomp()
+#     if selection == "y" || selection == "Y"
+#         # Save key
+#         write_key($address)
+#     end
+# end
+
+# # Mining func
+# # Mine blocks
+# def mine_blocks(input_chain, addr, difficulty=nil)
+#     input_chain = Mine.run(input_chain, addr, difficulty)
+# end
+
+# ## Mining Menu
+# mine_mode = ""      # test or live
+# puts "Load mode:"
+# puts "1. Test server"
+# puts "2. Live server"
+# selection = gets.chomp()
+# if selection == "1"
+#     # while true
+#     #     # Ask to mine new block
+#     #     puts ""
+#     #     puts "Mine block? (Y/n)"
+#     #     selection = gets.chomp()
+#     #     if selection == "Y" || selection == "y"
+#     #         # Mine block if true
+#     #         "Mining"
+#     #         mine_blocks($blockchain, $address, "000")
+#     #         "Block mined"
+#     #     elsif selection == "n" || selection == "N"
+#     #         run_mine = false
+#     #         break
+#     #     end
+#     # end
+# elsif selection == "2"
+#     # Live mine
+#     # Auto mine
+#     # while true
+#     #     "Mining"
+#     #     mine_blocks($blockchain, $address)
+#     #     "Block mined"
+#     # end
+# end
 
 get "/" do
     "Root"
@@ -30,19 +111,24 @@ end
 
 # Prints verification of block
 get "/verify" do
-    ver_ledger(BLOCKCHAIN)
+    get_chain()
+    ver_ledger($blockchain)
 end
 
-# Mines a block on access
-get "/mine" do
-    count = 1
-    while count > 0
-        "Mining"
-        mine_blocks(BLOCKCHAIN, ADDRESS)
-        "Block mined"
-        count -= 1
-    end
-end
+# # Mines a block on access
+# get "/mine" do
+#     if mine_mode == "test"
+#         # Mine once per call
+#         "Mining"
+#         mine_blocks($blockchain, $address, "000")
+#         "Block mined"
+#     elsif mine_mode == "live"
+#         # Continuous mine
+#         "Mining"
+#         mine_blocks($blockchain, $address)
+#         "Block mined"
+#     end
+# end
 
 # Receives Tx details from wallet and adds to mempool
 post "/transaction" do
@@ -138,20 +224,17 @@ end
 # end
 
 # Verify Ledger
-def ver_ledger(input_chain)
-    Verify.chain(input_chain)
-end
-
-# Mine blocks
-def mine_blocks(input_chain, addr)
-    input_chain = Mine.run(input_chain, addr)
+def ver_ledger()
+    get_chain()
+    Verify.chain($blockchain)
 end
 
 # View blocks
-def view_chain(input_chain)
+def view_chain()
+    get_chain()
     # Print blocks
     counter = 1
-    input_chain.ledger["mainnet"].each do |block|
+    $blockchain.ledger["mainnet"].each do |block|
         "BLOCK " + counter.to_s
         pp block
         counter += 1

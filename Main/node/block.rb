@@ -4,6 +4,8 @@ require "digest"
 require "pp"
 require "json"
 
+# MAKE USAGE DOCUMENT
+
 class Block
     attr_reader :id
     attr_reader :hash
@@ -14,7 +16,7 @@ class Block
     attr_reader :data
     attr_reader :difficulty
 
-    def initialize(prev_hash, merkle_r, data, id, difficulty="00000", hash=nil, nonce=nil, time_Stamp=nil)
+    def initialize(prev_hash, merkle_r, data, id, difficulty="000000", hash=nil, nonce=nil, time_Stamp=nil)
         @prev_hash = prev_hash
         @merkle_r = merkle_r
         @data = data
