@@ -16,7 +16,7 @@ class Block
     attr_reader :data
     attr_reader :difficulty
 
-    def initialize(prev_hash, merkle_r, data, id, difficulty="000000", hash=nil, nonce=nil, time_Stamp=nil)
+    def initialize(prev_hash, merkle_r, data, id, difficulty="00000", hash=nil, nonce=nil, time_Stamp=nil)
         @prev_hash = prev_hash
         @merkle_r = merkle_r
         @data = data
@@ -35,24 +35,6 @@ class Block
         end
     end
 
-    def to_json(*args)
-        {
-        JSON.create_id => self.class.name,
-        "id" => id,
-        "hash" => hash,
-        "prev_hash" => prev_hash,
-        "merkle_r" => merkle_r,
-        "data" => data,
-        "time_stamp" => time_stamp,
-        "nonce" => nonce,
-        "difficulty" => difficulty,
-        }.to_json(*args)
-    end
-    
-    def self.json_create(h)
-        new(h["prev_hash"], h["merkle_r"], h["data"], h["id"], h["difficulty"], h["hash"], h["nonce"], h["time_stamp"])
-    end
-
     def mine_block(input_hash, input_merkle, input_data, leading_0)
 
         # Init nonce
@@ -63,6 +45,7 @@ class Block
 
         # Mine block
         loop do
+            print nonce.to_s + "\r"
             # Get time at block attempt
             time = Time.now.to_i
 
@@ -77,5 +60,23 @@ class Block
 
         #pp hash, nonce, time_stamp
         return [hash_attempt, nonce, time]
+    end
+
+    def to_json(*args)
+        {
+        JSON.create_id => self.class.name,
+        "id" => id,
+        "hash" => hash,
+        "prev_hash" => prev_hash,
+        "merkle_r" => merkle_r,
+        "data" => data,
+        "time_stamp" => time_stamp.to_i,
+        "nonce" => nonce,
+        "difficulty" => difficulty,
+        }.to_json(*args)
+    end
+    
+    def self.json_create(h)
+        new(h["prev_hash"], h["merkle_r"], h["data"], h["id"], h["difficulty"], h["hash"], h["nonce"], h["time_stamp"])
     end
 end

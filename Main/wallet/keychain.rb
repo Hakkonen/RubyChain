@@ -111,11 +111,15 @@ module KeyChain
 
         signature_der_string = ECDSA::Format::SignatureDerString.encode(signature)
 
+        pp signature
+        pp signature_der_string
+
         return signature_der_string
     end
 
     # USAGE: Input public key, der formatted signature, and original string
     def KeyChain.verify(public_key, der_string, string)
+        # Decode DER
         signature = ECDSA::Format::SignatureDerString.decode(der_string)
         digest = Digest::SHA2.digest(string)
 

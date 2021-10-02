@@ -10,6 +10,9 @@ require "digest"
 require "pp"
 
 module Mine
+
+    $master_privkey, $master_pubkey = KeyChain.keypair_gen("master")
+    $master_pub_address = KeyChain.public_address_gen($master_pubkey)
     
     # Runs mining operations
     def Mine.run(chain, address, difficulty="000000")
@@ -18,12 +21,28 @@ module Mine
         # mempool = JsonIO.read("./mempool_dir/mempool.json", Tx)
         mempool = File.read("./mempool_dir/mempool.json")
 
-        puts "mempool: "
-        pp mempool
-
         # TODO: Create address that gives rewards from limited pool
         # Add miner's reward
-        # mempool << Tx.new("MASTER", address.to_s, "1", )
+        # Create signature
+        # reward_string = $master_pub_address.to_s + "," + address.to_s + "," + "1"
+        # reward_signature = KeyChain.sign($master_privkey, reward_string).unpack('H*') # Unpack hex string
+        # KeyChain.verify($master_pubkey, reward_signature.pack('H*'), reward_string) # Pack hex string
+        
+        # reward = Tx.new($master_pub_address[0], address.to_s, "1", reward_signature[0])
+
+        # reward_hash = {
+        #     JSON.create_id => "Tx",
+        #     "sender" => reward.sender,
+        #     "receiver" => reward.receiver,
+        #     "amount" => reward.amount,
+        #     "signature" => reward.signature,
+        #     "merkle_hash" => reward.merkle_hash
+        # }
+
+        # mempool << reward_hash
+
+        # Clear mempool to not reuse Tx's
+        Mine.clear_mempool()
 
         # Mine block
         # Ingests mempool data, it's merkle root and prior hash
@@ -38,9 +57,6 @@ module Mine
         # Write block to ledger backup
         JsonIO.write("./ledger/ledger.json", chain.ledger["mainnet"])
 
-        # Clear mempool to not reuse Tx's
-        Mine.clear_mempool()
-
         return chain
     end
 
@@ -51,7 +67,6 @@ module Mine
     def Mine.clear_mempool(address="./mempool_dir/mempool.json")
         File.open(address, "w+") do |file|
             file.truncate(0)
-            puts "Mempool cleared..."
         end
     end
 end

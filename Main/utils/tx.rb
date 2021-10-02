@@ -12,7 +12,7 @@ class Tx
     attr_reader :signature
     attr_reader :merkle_hash
 
-    def initialize(sender, receiver, amount, signature, merkle_hash=nil)
+    def initialize(sender, receiver, amount, signature=nil, merkle_hash=nil)
         @sender = sender # Public address
         @receiver = receiver # Public key hash
         @signature = signature

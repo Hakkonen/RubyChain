@@ -1,12 +1,15 @@
 # Creates, views, and updates address transactions and balances.
 
+require "./node/mine"
+require "./node/block"
+require "./node/blockchain"
+require "./utils/verify"
+require "./utils/loop"
 require "./utils/tx"
+require "./utils/JsonIO.rb"   # Imports read write func for JSON data
 
-require "faraday"
+require "json"
 require "./wallet/keychain"
-
-URL = "http://localhost"
-PORT = 4567
 
 ## Why even use a sinatra node?
 ## TODO: Just run wallet as a stand-alone balance and tx app
@@ -38,11 +41,70 @@ def read_key(address="./wallet/keyphrase.txt")
 end
 
 # Gets account balance
+# def get_balance(address)
+#     # Sends address to server
+#     res = Faraday.get("#{URL}:#{PORT}/balance", address: address).body
+#     # Returns response
+#     puts "BALANCE: " + res + " RBC"
+# end
+
 def get_balance(address)
-    # Sends address to server
-    res = Faraday.get("#{URL}:#{PORT}/balance", address: address).body
-    # Returns response
-    puts "BALANCE: " + res + " RBC"
+    # Receives bitcoin address, parses database, and returns list of relevant tx's
+    # address = params.values_at("address")[0][0]
+    puts "Address: " + address.to_s
+
+    # Open transaction list for return
+    tx_list = []
+    balance = 0
+    
+    # Open blockchain JSON to search
+    blockchain = JsonIO.read("./ledger/ledger.json", Block)
+    blockchain.each do |block|
+        if block.data != ""
+            # Parses string into JSON to allow iteration
+            parsed_data = JSON.parse(block.data)
+            # Unpacks each JSON object
+            parsed_data.each do |tx|
+                # Reforms Tx object from data
+                tx_cache = Tx.json_create tx
+                # Checks if transaction contains address
+                if tx_cache.receiver == address
+                    # tx_list << tx_cache
+                    balance += tx_cache.amount.to_i
+                end
+            end
+        end
+    end
+
+    puts "tx list:"
+    pp "BALANCE: " + balance.to_s + " RBC"
+end
+
+def send_tx(priv_key, from, to, amount)
+    # Create signature
+    string = from.to_s + "," + to.to_s + "," + amount.to_s
+    signature = KeyChain.sign(priv_key, string).unpack('H*') # Unpack hex string
+    puts signature
+
+    # Verify
+    KeyChain.verify($public_key, signature.pack('H*'), string) # Pack hex string
+
+    # Create tx object
+    new_tx = Tx.new(from[0], to, amount, signature[0])
+
+    # Read mempool JSON into cache
+    mempool_cache = JsonIO.read("./mempool_dir/mempool.json", Tx)
+
+    # Append tx to mempool cache
+    mempool_cache << new_tx
+
+    puts mempool_cache
+
+    # Write mempool to JSON
+    # Mine.write_mempool(mempool_cache)
+    JsonIO.write("./mempool_dir/mempool.json", mempool_cache)
+
+    puts "Tx sent"
 end
 
 # Menu function
@@ -55,9 +117,14 @@ def menu()
 
     if selection == "1"
         # See balance
-        get_balance($pub_address)
+        get_balance($pub_address[0])
     elsif selection == "2"
         # Send tx
+        puts "Enter recipient address:"
+        to = gets.chomp()           # TODO: ver length
+        puts "Enter amount:"
+        amount = gets.chomp().to_i  # TODO: ver amount available
+        send_tx($private_key, $pub_address, to, amount)
     end
 end
 
