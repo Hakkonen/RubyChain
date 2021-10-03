@@ -42,6 +42,9 @@ A note on why SHA256 works:
         100 + 100 = 200
     Now imagine that we did not know what the input was to achieve our output of 200. This is the fundamental logic behind a one-way hash. It creates an output that has too many possible combinations to reverse. 
 
+How a bitcoin hash wallet works:
+    Bitcoin style hash wallets work because the user has access to the "private" keys, which when put through a one-way encryption algorithm will generate a "private" key. Because the network only sees transactions from "public" to "public" hash keys, any wallet can be seen but not transacted from. 
+
 Construction of a classic BTC block:
     Field	Size (Bytes)	Comments
     version	4 byte	        Block version number
@@ -58,3 +61,30 @@ merkleroot = '4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b'
     time       = 1231006505
     bits       = '1d00ffff'
     nonce      = 2083236893
+
+EXAMPLE RUNNING OF A BLOCKCHAIN
+    Blockchain flow:
+        1. Generate genesis block
+        2. Begin mining / generating blocks
+        3. When a block is generated the block will draw merkle tree data from the ledger
+
+    Transaction flow:
+        1. The ledger is generated
+        2. Money is kept in the ledger by hash to hash transactions
+            a. a16ef10 has 2 RubyCoin
+            b. a16ef10 -> 1 RubyCoin -> b15a11
+            c. a16ef10 has 1 RubyCoin
+            d. b15a11 has 1 RubyCoin
+        3. When a new block is mined the merkle root of all transactions is committed 
+
+Endianness and the block hash:
+    Endianness is the sequencing of data in a string of bits from either most significant bit at the start of the byte, or the least significant bit at the start of the byte. The choice between the two offer no real significant advantages, and comes down the the programmer's choice at the point of creation. However, Bitcoin creator's Satoshi Nakamoto chose to use little-endianness for speed, so I will be utilising their method.
+
+    The significance of utilising endianness in this program (or Bitcoin's) comes down to the compression of block hash data into an 80-byte string. This string consists of six components of variang length:
+        1. Version (4 bytes )
+        2. Previous Hash ( 32 bytes / 256-bit hash )
+        3. Merkle Root ( 32 bytes / 256-bit hash )
+        4. Time ( 4 bytes )
+        5. Bits ( 4 bytes )
+        6. Nonce ( 4 bytes )
+    The final binary string is then fed into the SHA256 algorithm which will provide the blocks final hash output.
