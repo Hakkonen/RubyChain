@@ -12,7 +12,7 @@ class Tx
     attr_reader :signature
     attr_reader :merkle_hash
 
-    def initialize(sender, receiver, amount, signature=nil, merkle_hash=nil)
+    def initialize(sender, receiver, amount, signature, merkle_hash=nil)
         @sender = sender # Public address
         @receiver = receiver # Public key hash
         @signature = signature
@@ -34,11 +34,11 @@ class Tx
     def to_json(*args)
         {
         JSON.create_id => self.class.name,
-        "sender:" => sender,
-        "receiver:" => receiver,
-        "amount:" => amount,
-        "signature:" => signature,
-        "merkle_hash:" => merkle_hash.to_s
+        "sender" => sender,
+        "receiver" => receiver,
+        "amount" => amount,
+        "signature" => signature,
+        "merkle_hash" => merkle_hash.to_s
         }.to_json(*args)
     end
 

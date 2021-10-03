@@ -22,7 +22,6 @@ module JsonIO
         # Converts JSON file to array of objects
         objectify = []
         hash.each do |item|
-            # pp item
             cache << object_type.json_create(item)
         end
 

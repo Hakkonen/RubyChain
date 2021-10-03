@@ -18,24 +18,26 @@ module Mine
     def Mine.run(chain, address, difficulty="000000")
 
         # Open mempool data
-        # mempool = JsonIO.read("./mempool_dir/mempool.json", Tx)
-        mempool = File.read("./mempool_dir/mempool.json")
+        # mempool = File.read("./mempool_dir/mempool.json")
+        mempool_cache = JsonIO.read("./mempool_dir/mempool.json", Tx)
 
-        # TODO: Create address that gives rewards from limited pool
         # Add miner's reward
         # Create signature
         reward_string = $master_pub_address.to_s + "," + address.to_s + "," + "1"
         reward_signature = KeyChain.sign($master_privkey, reward_string).unpack('H*') # Unpack hex string
         KeyChain.verify($master_pubkey, reward_signature.pack('H*'), reward_string) # Pack hex string
         
-        reward = Tx.new($master_pub_address[0], address.to_s, "1", reward_signature[0])
-
-        reward_hash = reward.to_json
+        reward = Tx.new($master_pub_address[0], address, 1, reward_signature[0])
 
         ## TODO: Need to make it go in as an array
-        mempool << reward_hash.to_s
+        mempool_cache << reward
 
-        pp mempool
+        # Write mempool to JSON
+        JsonIO.write("./mempool_dir/mempool.json", mempool_cache)
+
+        # Open mempool data
+        # mempool = File.read("./mempool_dir/mempool.json")
+        mempool = File.read("./mempool_dir/mempool.json")
 
         # Clear mempool to not reuse Tx's
         Mine.clear_mempool()

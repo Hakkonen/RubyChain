@@ -53,18 +53,26 @@ def get_balance(address)
     # Open transaction list for return
     tx_list = []
     balance = 0
-    
+
     # Open blockchain JSON to search
     blockchain = JsonIO.read("./ledger/ledger.json", Block)
     blockchain.each do |block|
         if block.data != ""
             # Parses string into JSON to allow iteration
             parsed_data = JSON.parse(block.data)
+
             # Unpacks each JSON object
             parsed_data.each do |tx|
-                # Reforms Tx object from data
+
+                # # Reforms Tx object from data
                 tx_cache = Tx.json_create tx
-                # Checks if transaction contains address
+
+                # Checks if Tx has address as sender
+                if tx_cache.sender == address
+                    # tx_list << tx_cache
+                    balance -= tx_cache.amount.to_i
+                end
+                # Checks if Tx has address as receiver
                 if tx_cache.receiver == address
                     # tx_list << tx_cache
                     balance += tx_cache.amount.to_i
@@ -72,7 +80,7 @@ def get_balance(address)
             end
         end
     end
-
+    
     return balance
 end
 
@@ -80,8 +88,10 @@ end
 ## TODO: Verify balance before sending
 def send_tx(priv_key, from, to, amount)
     # Get balance before creating TX
-    balance = get_balance($pub_address)
-    if amount > balance
+    balance = get_balance($pub_address[0])
+    if amount.to_i > balance.to_i
+        puts amount.to_s + " amount"
+        puts balance.to_s + " balance"
         puts "INSUFFICIENT FUNDS"
     else
         # Create signature
@@ -100,8 +110,6 @@ def send_tx(priv_key, from, to, amount)
 
         # Append tx to mempool cache
         mempool_cache << new_tx
-
-        puts mempool_cache
 
         # Write mempool to JSON
         # Mine.write_mempool(mempool_cache)
@@ -134,8 +142,9 @@ def menu()
 
     if selection == "1"
         # Display balance
+        balance = get_balance($pub_address[0])
         puts ""
-        puts "BALANCE: " + get_balance($pub_address[0]).to_s + " RubyCoins"
+        puts "BALANCE: " + balance.to_s
     elsif selection == "2"
         # Send tx
         puts "Enter recipient address:"
