@@ -19,16 +19,16 @@ module KeyChain
 
         # Generate private key
         private_key = Integer("0x" + Digest::SHA256.hexdigest(string).to_s).to_i
-        puts "Private key:"
-        pp private_key
-        puts 'private key: %#x' % private_key
+        # puts "Private key:"
+        # pp private_key
+        # puts 'private key: %#x' % private_key
         result.push private_key
 
         # Generate public address from the private key integer
         ecc_public_key = group.generator.multiply_by_scalar(private_key)
-        puts "Public key: "
-        puts '  x: %#x' % ecc_public_key.x
-        puts '  y: %#x' % ecc_public_key.y
+        # puts "Public key: "
+        # puts '  x: %#x' % ecc_public_key.x
+        # puts '  y: %#x' % ecc_public_key.y
 
         result.push ecc_public_key
 
@@ -111,8 +111,8 @@ module KeyChain
 
         signature_der_string = ECDSA::Format::SignatureDerString.encode(signature)
 
-        pp signature
-        pp signature_der_string
+        # pp signature
+        # pp signature_der_string
 
         return signature_der_string
     end

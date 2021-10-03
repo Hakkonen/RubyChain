@@ -24,22 +24,18 @@ module Mine
         # TODO: Create address that gives rewards from limited pool
         # Add miner's reward
         # Create signature
-        # reward_string = $master_pub_address.to_s + "," + address.to_s + "," + "1"
-        # reward_signature = KeyChain.sign($master_privkey, reward_string).unpack('H*') # Unpack hex string
-        # KeyChain.verify($master_pubkey, reward_signature.pack('H*'), reward_string) # Pack hex string
+        reward_string = $master_pub_address.to_s + "," + address.to_s + "," + "1"
+        reward_signature = KeyChain.sign($master_privkey, reward_string).unpack('H*') # Unpack hex string
+        KeyChain.verify($master_pubkey, reward_signature.pack('H*'), reward_string) # Pack hex string
         
-        # reward = Tx.new($master_pub_address[0], address.to_s, "1", reward_signature[0])
+        reward = Tx.new($master_pub_address[0], address.to_s, "1", reward_signature[0])
 
-        # reward_hash = {
-        #     JSON.create_id => "Tx",
-        #     "sender" => reward.sender,
-        #     "receiver" => reward.receiver,
-        #     "amount" => reward.amount,
-        #     "signature" => reward.signature,
-        #     "merkle_hash" => reward.merkle_hash
-        # }
+        reward_hash = reward.to_json
 
-        # mempool << reward_hash
+        ## TODO: Need to make it go in as an array
+        mempool << reward_hash.to_s
+
+        pp mempool
 
         # Clear mempool to not reuse Tx's
         Mine.clear_mempool()

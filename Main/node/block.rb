@@ -5,6 +5,7 @@ require "pp"
 require "json"
 
 # MAKE USAGE DOCUMENT
+# TODO: Fix time issue
 
 class Block
     attr_reader :id
@@ -45,7 +46,6 @@ class Block
 
         # Mine block
         loop do
-            print nonce.to_s + "\r"
             # Get time at block attempt
             time = Time.now.to_i
 

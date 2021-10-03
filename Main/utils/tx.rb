@@ -34,11 +34,11 @@ class Tx
     def to_json(*args)
         {
         JSON.create_id => self.class.name,
-        "sender" => sender,
-        "receiver" => receiver,
-        "amount" => amount,
-        "signature" => signature,
-        "merkle_hash" => merkle_hash.to_s
+        "sender:" => sender,
+        "receiver:" => receiver,
+        "amount:" => amount,
+        "signature:" => signature,
+        "merkle_hash:" => merkle_hash.to_s
         }.to_json(*args)
     end
 

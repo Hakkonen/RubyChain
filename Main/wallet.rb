@@ -1,6 +1,5 @@
 # Creates, views, and updates address transactions and balances.
 
-require "./node/mine"
 require "./node/block"
 require "./node/blockchain"
 require "./utils/verify"
@@ -11,12 +10,19 @@ require "./utils/JsonIO.rb"   # Imports read write func for JSON data
 require "json"
 require "./wallet/keychain"
 
-## Why even use a sinatra node?
-## TODO: Just run wallet as a stand-alone balance and tx app
-
 ## TODO
 # 1. Add check balance
 # 2. Add send money
+
+## Order of operation:
+# 1. Load key
+#    a. From saved file
+#    b. From manual entry
+#        i. Save entered key
+# 2. Menu for wallet functions
+#   a. Check balance
+#   b. Send transaction
+#   c. Display keypair
 
 $private_key = ""
 $public_key = ""
@@ -40,18 +46,9 @@ def read_key(address="./wallet/keyphrase.txt")
     end
 end
 
-# Gets account balance
-# def get_balance(address)
-#     # Sends address to server
-#     res = Faraday.get("#{URL}:#{PORT}/balance", address: address).body
-#     # Returns response
-#     puts "BALANCE: " + res + " RBC"
-# end
-
+# Reads blockchain for balances
 def get_balance(address)
-    # Receives bitcoin address, parses database, and returns list of relevant tx's
-    # address = params.values_at("address")[0][0]
-    puts "Address: " + address.to_s
+    # TODO: Needs to count sent AND received for total
 
     # Open transaction list for return
     tx_list = []
@@ -76,35 +73,54 @@ def get_balance(address)
         end
     end
 
-    puts "tx list:"
-    pp "BALANCE: " + balance.to_s + " RBC"
+    return balance
 end
 
+# Creates TX object from values and sends to mempool
+## TODO: Verify balance before sending
 def send_tx(priv_key, from, to, amount)
-    # Create signature
-    string = from.to_s + "," + to.to_s + "," + amount.to_s
-    signature = KeyChain.sign(priv_key, string).unpack('H*') # Unpack hex string
-    puts signature
+    # Get balance before creating TX
+    balance = get_balance($pub_address)
+    if amount > balance
+        puts "INSUFFICIENT FUNDS"
+    else
+        # Create signature
+        string = from.to_s + "," + to.to_s + "," + amount.to_s
+        signature = KeyChain.sign(priv_key, string).unpack('H*') # Unpack hex string
+        puts signature
 
-    # Verify
-    KeyChain.verify($public_key, signature.pack('H*'), string) # Pack hex string
+        # Verify
+        KeyChain.verify($public_key, signature.pack('H*'), string) # Pack hex string
 
-    # Create tx object
-    new_tx = Tx.new(from[0], to, amount, signature[0])
+        # Create tx object
+        new_tx = Tx.new(from[0], to, amount, signature[0])
 
-    # Read mempool JSON into cache
-    mempool_cache = JsonIO.read("./mempool_dir/mempool.json", Tx)
+        # Read mempool JSON into cache
+        mempool_cache = JsonIO.read("./mempool_dir/mempool.json", Tx)
 
-    # Append tx to mempool cache
-    mempool_cache << new_tx
+        # Append tx to mempool cache
+        mempool_cache << new_tx
 
-    puts mempool_cache
+        puts mempool_cache
 
-    # Write mempool to JSON
-    # Mine.write_mempool(mempool_cache)
-    JsonIO.write("./mempool_dir/mempool.json", mempool_cache)
+        # Write mempool to JSON
+        # Mine.write_mempool(mempool_cache)
+        JsonIO.write("./mempool_dir/mempool.json", mempool_cache)
 
-    puts "Tx sent"
+        puts "Tx sent"
+    end
+end
+
+# Display keypair
+def display_keypair()
+    puts "Private key INT: " + $private_key.to_s
+    puts 'private key HEX: %#x' % $private_key
+    puts ""
+    puts "Public key: "
+    puts '  x: %#x' % $public_key.x
+    puts '  y: %#x' % $public_key.y
+    puts ""
+    puts "Public Address: " + $pub_address[0].to_s
 end
 
 # Menu function
@@ -113,11 +129,13 @@ def menu()
     puts "Menu: "
     puts "1. See balance"
     puts "2. Send transaction"
+    puts "3. Display Priv/Pub keypair"
     selection = gets.chomp()
 
     if selection == "1"
-        # See balance
-        get_balance($pub_address[0])
+        # Display balance
+        puts ""
+        puts "BALANCE: " + get_balance($pub_address[0]).to_s + " RubyCoins"
     elsif selection == "2"
         # Send tx
         puts "Enter recipient address:"
@@ -125,30 +143,33 @@ def menu()
         puts "Enter amount:"
         amount = gets.chomp().to_i  # TODO: ver amount available
         send_tx($private_key, $pub_address, to, amount)
+    elsif selection == "3"
+        display_keypair()
     end
 end
 
 def main()
 
     # Load or input keyphrase
-    puts "Menu:", "1. Enter keyphrase", "2. Load keyphrase"
+    puts "Menu:", "1. Load keyphrase", "2. Enter keyphrase"
     selection = gets.chomp()
+    
     # Init memnonic variable
     memnonic = ""
     if selection == "1"
+        # Load keyphrase
+        memnonic = read_key()
+    elsif selection == "2"
         # Enter memnonic phrase to unlock your key pair
         puts "Enter keyphrase"
         memnonic = gets.chomp()
-    else
-        # Load keyphrase
-        memnonic = read_key()
     end
 
     # Generate public/private key pair from memnonic
     $private_key, $public_key = KeyChain.keypair_gen(memnonic)
 
-    # # TODO: Save key pair to file
-    if selection == "1"
+    # Ask to save keypair if new memnonic
+    if selection == "2"
         puts "Save keyphrase? (Y/n)"
         selection = gets.chomp()
         if selection == "y" || selection == "Y"
@@ -160,6 +181,7 @@ def main()
 
     # Generate public address
     $pub_address = KeyChain.public_address_gen($public_key)
+    puts ""
     puts "Public address:"
     $pub_address.each do |add|
         puts add.to_s
@@ -181,21 +203,7 @@ def main()
     # signature = KeyChain.sign($private_key, "Hello, world!")
     # KeyChain.verify($public_key, signature, "Hello, world!")
 
-    # # Test tx mempool
-    # new_tx = Tx.new(from, to, amount, signature)
-    # Faraday.post("#{URL}:#{PORT}/transaction", from: from, to: to, amount: amount, signature: signature)
-
-    # TODO: Display balance
-    # Will require POSTing to node
-
-    # TODO: Send transaction
-    # Will require server-side verification of funds
-    # Must generate a sender's signature with private key
-    # Hash Tx with private key, should be decryptable with public key
-
 end
 
 main()
-
-# TODO: Add signed by to Tx
 

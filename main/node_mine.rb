@@ -14,6 +14,7 @@ require 'active_support/time'
 require "json"
 require "pp"
 
+## TODO: Verify chain on load
 
 # Creates cached chain
 $blockchain = Blockchain.new([])
@@ -107,7 +108,7 @@ while mine_mode == "1" || mine_mode == "2"
 end
 
 
-# Repeats a task infinitely 
+# # Repeats a task infinitely 
 # Currently just showing that server is running
 # Loop.repeat_every(3.seconds) do
 #     puts "Miner running @ " + Time.now
